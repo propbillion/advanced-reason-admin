@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SEM Academy — Admin Dashboard</title>
+<style>
+  :root{
+    --bg:#fbfbfd; --ink:#1d1d1f; --ink-soft:#6e6e73; --line:#d2d2d7;
+    --blue:#0071e3; --blue-dark:#0058b0; --green:#1d7a3e; --red:#c7372f;
+    --card:#ffffff; --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:0 22px;}
+  .hero{padding:50px 0 30px;text-align:center;border-bottom:1px solid var(--line);}
+  .eyebrow{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;}
+  .hero h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:-0.015em;margin:0 0 10px;}
+  .hero p{font-size:16px;color:var(--ink-soft);}
+
+  .gate-card{max-width:420px;margin:60px auto;background:var(--card);border-radius:var(--radius);padding:32px;
+    box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 30px rgba(0,0,0,.05);text-align:center;}
+  .gate-card input{width:100%;padding:14px 16px;font-size:17px;border:1px solid var(--line);border-radius:12px;
+    background:#f5f5f7;margin:16px 0;font-family:inherit;text-align:center;letter-spacing:2px;}
+  .gate-card input:focus{outline:none;border-color:var(--blue);background:#fff;}
+  .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);
+    color:#fff;border:none;border-radius:980px;padding:13px 28px;font-size:16px;font-weight:600;cursor:pointer;
+    width:100%;font-family:inherit;}
+  .btn-primary:hover{background:var(--blue-dark);}
+  .btn-secondary{background:#f5f5f7;color:var(--ink);border:1px solid var(--line);border-radius:980px;
+    padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn-secondary:hover{background:#ebebed;}
+  .error-msg{color:var(--red);font-size:14px;margin-top:8px;}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;padding:26px 0 16px;flex-wrap:wrap;gap:12px;}
+  .stat-summary{display:flex;gap:14px;flex-wrap:wrap;}
+  .mini-stat{background:var(--card);border-radius:12px;padding:12px 18px;text-align:center;
+    box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.04);min-width:90px;}
+  .mini-stat .v{font-size:20px;font-weight:700;}
+  .mini-stat .l{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+
+  .sub-list{display:flex;flex-direction:column;gap:10px;margin-bottom:60px;}
+  .sub-row{background:var(--card);border-radius:14px;padding:18px 22px;display:flex;align-items:center;
+    justify-content:space-between;gap:16px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.04);
+    transition:transform .1s ease;flex-wrap:wrap;}
+  .sub-row:hover{transform:translateY(-1px);}
+  .sub-left{display:flex;flex-direction:column;gap:3px;}
+  .sub-name{font-weight:700;font-size:16px;}
+  .sub-meta{font-size:13px;color:var(--ink-soft);}
+  .sub-right{display:flex;align-items:center;gap:14px;}
+  .sub-score{font-size:20px;font-weight:700;}
+  .sub-badge{font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:100px;text-transform:uppercase;letter-spacing:.03em;}
+  .sub-badge.pass{background:#e6f7ec;color:var(--green);}
+  .sub-badge.conditional{background:#fff4e0;color:#9a6700;}
+  .sub-badge.fail{background:#fdeceb;color:var(--red);}
+  .chevron{color:var(--ink-soft);font-size:18px;}
+
+  .empty-state{text-align:center;padding:60px 20px;color:var(--ink-soft);}
+
+  .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:flex;
+    align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;}
+  .detail-panel{background:var(--bg);border-radius:var(--radius);max-width:840px;width:100%;padding:0;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .detail-header{padding:28px 30px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;
+    align-items:flex-start;gap:16px;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;}
+  .detail-header h2{margin:0 0 4px;font-size:22px;}
+  .detail-header p{margin:0;color:var(--ink-soft);font-size:14px;}
+  .close-btn{background:#f5f5f7;border:none;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;
+    flex-shrink:0;color:var(--ink-soft);}
+  .close-btn:hover{background:#ebebed;}
+  .detail-body{padding:26px 30px 40px;}
+
+  .stat-row{display:flex;gap:12px;margin:0 0 26px;flex-wrap:wrap;}
+  .stat-box{flex:1;min-width:110px;background:var(--card);border-radius:14px;padding:16px;text-align:center;
+    box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.04);}
+  .stat-box .val{font-size:22px;font-weight:700;}
+  .stat-box .lbl{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+
+  .filter-tabs{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap;}
+  .filter-tab{padding:8px 16px;border-radius:100px;border:1px solid var(--line);background:#fff;font-size:13.5px;
+    font-weight:600;cursor:pointer;color:var(--ink-soft);}
+  .filter-tab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  .review-card{background:var(--card);border-radius:16px;padding:22px 24px;margin-bottom:14px;
+    box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.04);border-left:4px solid var(--line);}
+  .review-card.correct{border-left-color:var(--green);}
+  .review-card.wrong{border-left-color:var(--red);}
+  .review-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;}
+  .review-q{font-size:15.5px;font-weight:600;flex:1;line-height:1.5;}
+  .review-icon{flex-shrink:0;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;color:#fff;}
+  .review-icon.correct{background:var(--green);}
+  .review-icon.wrong{background:var(--red);}
+  .opt-review{padding:11px 13px;border-radius:10px;margin-bottom:7px;font-size:13.5px;line-height:1.5;background:#f5f5f7;}
+  .opt-review.was-correct{background:#e6f7ec;}
+  .opt-review.was-chosen-wrong{background:#fdeceb;}
+  .opt-review .opt-label{font-weight:700;margin-right:5px;}
+  .tag-chip{display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    padding:2px 7px;border-radius:100px;margin-left:6px;vertical-align:middle;}
+  .tag-chip.correct-chip{background:var(--green);color:#fff;}
+  .tag-chip.wrong-chip{background:var(--red);color:#fff;}
+  .tag-chip.your-chip{background:var(--ink);color:#fff;}
+  .opt-reason{margin-top:5px;color:var(--ink-soft);font-size:12.5px;}
+
+  .refresh-note{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:6px;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div id="gateScreen">
+  <div class="hero">
+    <div class="wrap">
+      <div class="eyebrow">PropBillion · SEM Academy</div>
+      <h1>Admin Dashboard</h1>
+      <p>Owner-only view — all candidate exam submissions in one place.</p>
+    </div>
+  </div>
+  <div class="gate-card">
+    <div style="font-weight:700;font-size:18px;margin-bottom:4px;">Enter Admin Passcode</div>
+    <input type="password" id="passcodeInput" placeholder="••••••••">
+    <button class="btn-primary" id="unlockBtn">Unlock Dashboard</button>
+    <div class="error-msg hidden" id="passErr">Incorrect passcode.</div>
+  </div>
+</div>
+
+<div id="dashScreen" class="hidden">
+  <div class="hero">
+    <div class="wrap">
+      <div class="eyebrow">PropBillion · SEM Academy</div>
+      <h1>Admin Dashboard</h1>
+      <p>Every submission, scored and ready to review.</p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="toolbar">
+      <div class="stat-summary" id="statSummary"></div>
+      <button class="btn-secondary" id="refreshBtn">Refresh</button>
+    </div>
+    <div class="sub-list" id="subList"></div>
+    <div class="refresh-note">Auto-refreshes every 30 seconds while this tab is open.</div>
+  </div>
+</div>
+
+<div id="detailOverlay" class="detail-overlay hidden"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="data.js"></script>
+<script>
+const MARKS_PER_Q = 2;
+let db = null;
+let submissions = [];
+
+try{
+  if(FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY"){
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+  }
+}catch(e){ console.warn("Firebase not configured:", e); }
+
+/* ---------- Gate ---------- */
+document.getElementById('unlockBtn').addEventListener('click', tryUnlock);
+document.getElementById('passcodeInput').addEventListener('keypress', (e) => { if(e.key==='Enter') tryUnlock(); });
+
+function tryUnlock(){
+  const val = document.getElementById('passcodeInput').value;
+  if(val === ADMIN_PASSCODE){
+    document.getElementById('gateScreen').classList.add('hidden');
+    document.getElementById('dashScreen').classList.remove('hidden');
+    loadSubmissions();
+    setInterval(loadSubmissions, 30000);
+  } else {
+    document.getElementById('passErr').classList.remove('hidden');
+  }
+}
+
+/* ---------- Load submissions ---------- */
+async function loadSubmissions(){
+  const listEl = document.getElementById('subList');
+  if(!db){
+    listEl.innerHTML = `<div class="empty-state">Firebase not connected yet.<br>Add your Firebase config in <b>data.js</b> to start receiving submissions.</div>`;
+    return;
+  }
+  try{
+    const snap = await db.collection(FIRESTORE_COLLECTION).orderBy('createdAt','desc').limit(200).get();
+    submissions = [];
+    snap.forEach(doc => submissions.push({id: doc.id, ...doc.data()}));
+    renderSubList();
+  }catch(e){
+    console.error(e);
+    listEl.innerHTML = `<div class="empty-state">Could not load submissions.<br>Check Firestore rules and internet connection.</div>`;
+  }
+}
+document.getElementById('refreshBtn').addEventListener('click', loadSubmissions);
+
+function statusOf(pct){
+  if(pct >= PASS_THRESHOLD) return {label:"Go-Live", cls:"pass"};
+  if(pct >= CONDITIONAL_THRESHOLD) return {label:"Conditional", cls:"conditional"};
+  return {label:"Not Ready", cls:"fail"};
+}
+
+function renderSubList(){
+  const listEl = document.getElementById('subList');
+  const summaryEl = document.getElementById('statSummary');
+
+  if(submissions.length === 0){
+    listEl.innerHTML = `<div class="empty-state">No submissions yet. Once a candidate submits the exam, it will appear here automatically.</div>`;
+    summaryEl.innerHTML = "";
+    return;
+  }
+
+  const total = submissions.length;
+  const avgPct = Math.round(submissions.reduce((a,s)=>a+(s.pct||0),0)/total);
+  const passCount = submissions.filter(s => (s.pct||0) >= PASS_THRESHOLD).length;
+
+  summaryEl.innerHTML = `
+    <div class="mini-stat"><div class="v">${total}</div><div class="l">Submissions</div></div>
+    <div class="mini-stat"><div class="v">${avgPct}%</div><div class="l">Avg Score</div></div>
+    <div class="mini-stat"><div class="v">${passCount}</div><div class="l">Go-Live</div></div>
+  `;
+
+  listEl.innerHTML = "";
+  submissions.forEach(sub => {
+    const st = statusOf(sub.pct || 0);
+    const row = document.createElement('div');
+    row.className = 'sub-row';
+    row.innerHTML = `
+      <div class="sub-left">
+        <div class="sub-name">${sub.name || 'Unknown'}</div>
+        <div class="sub-meta">${sub.day || ''} · Submitted ${sub.timestamp || ''}</div>
+      </div>
+      <div class="sub-right">
+        <div class="sub-score">${sub.marks}/${sub.total}</div>
+        <div class="sub-badge ${st.cls}">${st.label}</div>
+        <div class="chevron">›</div>
+      </div>
+    `;
+    row.addEventListener('click', () => openDetail(sub));
+    listEl.appendChild(row);
+  });
+}
+
+/* ---------- Detail view ---------- */
+function openDetail(sub){
+  const overlay = document.getElementById('detailOverlay');
+  const st = statusOf(sub.pct || 0);
+
+  const detail = QUESTIONS.map((item, qi) => {
+    const chosen = sub.answers ? sub.answers[qi] : null;
+    const isCorrect = chosen === item.correct;
+    return {q:item.q, opts:item.opts, chosen, correct:item.correct, isCorrect, reasons:item.reasons};
+  });
+
+  overlay.innerHTML = `
+    <div class="detail-panel">
+      <div class="detail-header">
+        <div>
+          <h2>${sub.name || 'Unknown'}</h2>
+          <p>${sub.day || ''} · Submitted ${sub.timestamp || ''}</p>
+        </div>
+        <button class="close-btn" id="closeDetailBtn">✕</button>
+      </div>
+      <div class="detail-body">
+        <div class="stat-row">
+          <div class="stat-box"><div class="val">${sub.marks}/${sub.total}</div><div class="lbl">Marks</div></div>
+          <div class="stat-box"><div class="val">${sub.pct}%</div><div class="lbl">Score</div></div>
+          <div class="stat-box"><div class="val">${sub.correctCount}</div><div class="lbl">Correct</div></div>
+          <div class="stat-box"><div class="val">${sub.wrongCount}</div><div class="lbl">Wrong</div></div>
+        </div>
+        <div class="sub-badge ${st.cls}" style="margin-bottom:20px;display:inline-block;">${st.label}</div>
+        <div class="filter-tabs" id="detailFilterTabs">
+          <div class="filter-tab active" data-filter="all">All 30</div>
+          <div class="filter-tab" data-filter="wrong">Wrong Only</div>
+          <div class="filter-tab" data-filter="correct">Correct Only</div>
+        </div>
+        <div id="detailReviewContainer"></div>
+      </div>
+    </div>
+  `;
+  overlay.classList.remove('hidden');
+  document.getElementById('closeDetailBtn').addEventListener('click', () => overlay.classList.add('hidden'));
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.add('hidden'); });
+
+  renderDetailReview(detail, 'all');
+  document.querySelectorAll('#detailFilterTabs .filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#detailFilterTabs .filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderDetailReview(detail, tab.dataset.filter);
+    });
+  });
+}
+
+function renderDetailReview(detail, filter){
+  const container = document.getElementById('detailReviewContainer');
+  const letters = ['A','B','C','D'];
+  container.innerHTML = "";
+  detail.forEach((item, qi) => {
+    if(filter === 'wrong' && item.isCorrect) return;
+    if(filter === 'correct' && !item.isCorrect) return;
+
+    let optsHTML = "";
+    item.opts.forEach((opt, oi) => {
+      const isCorrectOpt = oi === item.correct;
+      const isChosenOpt = oi === item.chosen;
+      let cls = 'opt-review';
+      let chip = '';
+      if(isCorrectOpt){ cls += ' was-correct'; chip += '<span class="tag-chip correct-chip">Correct answer</span>'; }
+      if(isChosenOpt && !isCorrectOpt){ cls += ' was-chosen-wrong'; chip += '<span class="tag-chip wrong-chip">Candidate chose</span>'; }
+      if(isChosenOpt && isCorrectOpt){ chip += '<span class="tag-chip your-chip">Candidate chose this</span>'; }
+      optsHTML += `
+        <div class="${cls}">
+          <span class="opt-label">${letters[oi]}.</span>${opt}${chip}
+          <div class="opt-reason">${item.reasons[oi]}</div>
+        </div>
+      `;
+    });
+    if(item.chosen === null || item.chosen === undefined){
+      optsHTML += `<div class="opt-review was-chosen-wrong"><span class="tag-chip wrong-chip">Not answered</span></div>`;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'review-card ' + (item.isCorrect ? 'correct' : 'wrong');
+    card.innerHTML = `
+      <div class="review-top">
+        <div class="review-q">Q${qi+1}. ${item.q}</div>
+        <div class="review-icon ${item.isCorrect ? 'correct' : 'wrong'}">${item.isCorrect ? '✓' : '✕'}</div>
+      </div>
+      ${optsHTML}
+    `;
+    container.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>
